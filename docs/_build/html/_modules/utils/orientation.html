@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>utils.orientation &mdash; mpu9250_ahrs 0.1.0 documentation</title>
+  <title>utils.orientation &mdash; mpu9250_ahrs 0.2.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../_static/documentation_options.js?v=37f418d5"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -252,6 +252,90 @@
     <span class="k">return</span> <span class="n">Q</span></div>
 
 
+<div class="viewcode-block" id="skew_symmetric">
+<a class="viewcode-back" href="../../utils.html#utils.orientation.skew_symmetric">[docs]</a>
+<span class="k">def</span> <span class="nf">skew_symmetric</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create skew symmetric matrix by vector</span>
+
+<span class="sd">    :param float x: 1st element of vector</span>
+<span class="sd">    :param float y: 2nd element of vector</span>
+<span class="sd">    :param float z: 3rd element of vector</span>
+<span class="sd">    :returns: </span>
+<span class="sd">        - matrix (ndarray) - skew-symmetric matrix</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">z</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span>
+                       <span class="p">[</span><span class="n">z</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">x</span><span class="p">],</span>
+                       <span class="p">[</span><span class="o">-</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">matrix</span></div>
+
+
+<div class="viewcode-block" id="axis2dcm">
+<a class="viewcode-back" href="../../utils.html#utils.orientation.axis2dcm">[docs]</a>
+<span class="k">def</span> <span class="nf">axis2dcm</span><span class="p">(</span><span class="n">axis</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert Axis angle to Direction Cosine Matrix [1]_</span>
+
+<span class="sd">    :param np.array axis: axis vector</span>
+<span class="sd">    :returns: </span>
+<span class="sd">        - DCM (numpy.matrix) - rotation matrix</span>
+
+<span class="sd">    .. Reference</span>
+<span class="sd">    .. [1] &#39;Wiki &lt;https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle&gt;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+    <span class="n">axis</span> <span class="o">=</span> <span class="n">axis</span> <span class="o">/</span> <span class="n">angle</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">axis</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">n_hat</span> <span class="o">=</span> <span class="n">skew_symmetric</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+    <span class="n">DCM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_hat</span>
+    <span class="k">return</span> <span class="n">DCM</span></div>
+
+
+<div class="viewcode-block" id="axis2quat">
+<a class="viewcode-back" href="../../utils.html#utils.orientation.axis2quat">[docs]</a>
+<span class="k">def</span> <span class="nf">axis2quat</span><span class="p">(</span><span class="n">axis</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert Axis angle to Quaternion [1]_</span>
+
+<span class="sd">    :param np.array axis: axis vector</span>
+<span class="sd">    :returns: </span>
+<span class="sd">        - w (float) - Quaternion magnitude</span>
+<span class="sd">        - x (float) - Quaternion X axis</span>
+<span class="sd">        - y (float) - Quaternion Y axis</span>
+<span class="sd">        - z (float) - Quaternion Z axis</span>
+
+<span class="sd">    .. Reference</span>
+<span class="sd">    .. [1] &#39;Wiki &lt;https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation&gt;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+    <span class="n">axis</span> <span class="o">=</span> <span class="n">axis</span> <span class="o">/</span> <span class="n">angle</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">axis</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span></div>
+
+
+<div class="viewcode-block" id="axis2eul">
+<a class="viewcode-back" href="../../utils.html#utils.orientation.axis2eul">[docs]</a>
+<span class="k">def</span> <span class="nf">axis2eul</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">seq</span><span class="o">=</span><span class="s2">&quot;xyz&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert Axis angle to Euler angle</span>
+
+<span class="sd">    :param np.array axis: axis vector</span>
+<span class="sd">    :param str seq: rotation sequence</span>
+<span class="sd">    :returns: </span>
+<span class="sd">        - roll (float) - x-axis Euler angle in radians</span>
+<span class="sd">        - pitch (float) - y-axis Euler angle in radians</span>
+<span class="sd">        - yaw (float) - z-axis Euler angle in radians</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">axis2quat</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+    <span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span> <span class="o">=</span> <span class="n">quat2eul</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">seq</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span></div>
+
+
 <div class="viewcode-block" id="eul2dcm">
 <a class="viewcode-back" href="../../utils.html#utils.orientation.eul2dcm">[docs]</a>
 <span class="k">def</span> <span class="nf">eul2dcm</span><span class="p">(</span><span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span><span class="p">,</span> <span class="n">seq</span><span class="o">=</span><span class="s2">&quot;xyz&quot;</span><span class="p">,</span> <span class="n">coordinates</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">):</span>
@@ -310,6 +394,28 @@
     <span class="n">Q</span> <span class="o">=</span> <span class="n">Q_dict</span><span class="p">[</span><span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">Q_dict</span><span class="p">[</span><span class="n">seq</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">*</span> <span class="n">Q_dict</span><span class="p">[</span><span class="n">seq</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
     <span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">Q</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">Q</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">Q</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">Q</span><span class="o">.</span><span class="n">z</span>
     <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span></div>
+
+
+<div class="viewcode-block" id="eul2axis">
+<a class="viewcode-back" href="../../utils.html#utils.orientation.eul2axis">[docs]</a>
+<span class="k">def</span> <span class="nf">eul2axis</span><span class="p">(</span><span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span><span class="p">,</span> <span class="n">seq</span><span class="o">=</span><span class="s2">&quot;xyz&quot;</span><span class="p">,</span> <span class="n">coordinates</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert Euler angle to Axis angle [1]_</span>
+
+<span class="sd">    :param float roll: x-axis Euler angle in radians</span>
+<span class="sd">    :param float pitch: y-axis Euler angle in radians</span>
+<span class="sd">    :param float yaw: z-axis Euler angle in radians</span>
+<span class="sd">    :param str seq: rotation sequence</span>
+<span class="sd">    :param str coordinates: right-handed or left-handed coordinates system</span>
+<span class="sd">    :returns: </span>
+<span class="sd">        - axis (np.array) - Axis angle</span>
+
+<span class="sd">    .. Reference</span>
+<span class="sd">    .. [1] &#39;Wiki &lt;https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation#Log_map_from_SO(3)_to_%F0%9D%94%B0%F0%9D%94%AC(3)&gt;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dcm</span> <span class="o">=</span> <span class="n">eul2dcm</span><span class="p">(</span><span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span><span class="p">,</span> <span class="n">seq</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">)</span>
+    <span class="n">axis</span> <span class="o">=</span> <span class="n">dcm2axis</span><span class="p">(</span><span class="n">dcm</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">axis</span></div>
 
 
 <div class="viewcode-block" id="dcm2eul">
@@ -380,6 +486,17 @@
     <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span></div>
 
 
+<div class="viewcode-block" id="dcm2axis">
+<a class="viewcode-back" href="../../utils.html#utils.orientation.dcm2axis">[docs]</a>
+<span class="k">def</span> <span class="nf">dcm2axis</span><span class="p">(</span><span class="n">dcm</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">dcm</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">dcm</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">dcm</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">dcm</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">dcm</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">dcm</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">dcm</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
+    <span class="n">axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">x</span><span class="p">],[</span><span class="n">y</span><span class="p">],[</span><span class="n">z</span><span class="p">]])</span> <span class="o">*</span> <span class="n">angle</span>
+    <span class="k">return</span> <span class="n">axis</span></div>
+
+
 <div class="viewcode-block" id="quat2dcm">
 <a class="viewcode-back" href="../../utils.html#utils.orientation.quat2dcm">[docs]</a>
 <span class="k">def</span> <span class="nf">quat2dcm</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
@@ -431,6 +548,28 @@
     <span class="c1"># convert DCM to Euler angle</span>
     <span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span> <span class="o">=</span> <span class="n">dcm2eul</span><span class="p">(</span><span class="n">DCM</span><span class="p">,</span> <span class="n">seq</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span></div>
+
+
+<div class="viewcode-block" id="quat2axis">
+<a class="viewcode-back" href="../../utils.html#utils.orientation.quat2axis">[docs]</a>
+<span class="k">def</span> <span class="nf">quat2axis</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert Quaternion to Euler angle</span>
+
+<span class="sd">    :param float w: Quaternion magnitude</span>
+<span class="sd">    :param float x: Quaternion X axis</span>
+<span class="sd">    :param float y: Quaternion Y axis</span>
+<span class="sd">    :param float z: Quaternion Z axis</span>
+<span class="sd">    :returns: </span>
+<span class="sd">        - axis (np.array) - Axis angle</span>
+
+<span class="sd">    .. Reference</span>
+<span class="sd">    .. [1] &#39;Wiki &lt;https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Recovering_the_axis-angle_representation&gt;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">x</span><span class="p">],[</span><span class="n">y</span><span class="p">],[</span><span class="n">z</span><span class="p">]]))</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">norm</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+    <span class="n">axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">x</span><span class="p">],[</span><span class="n">y</span><span class="p">],[</span><span class="n">z</span><span class="p">]])</span> <span class="o">*</span> <span class="n">angle</span> <span class="o">/</span> <span class="n">norm</span>
+    <span class="k">return</span> <span class="n">axis</span></div>
 
 
 <div class="viewcode-block" id="quat_multi">
@@ -497,6 +636,28 @@
     <span class="k">return</span> <span class="n">q</span></div>
 
 
+<span class="c1"># import numpy as np</span>
+<span class="c1"># from scipy.spatial.transform import Rotation as R</span>
+<span class="c1"># rvec = np.array([-np.pi/3,np.pi/8,np.pi/4])</span>
+<span class="c1"># rotation = R.from_rotvec(rvec)</span>
+<span class="c1"># print(rotation.as_matrix())</span>
+<span class="c1"># print(rotation.as_quat())</span>
+<span class="c1"># rvec = np.array([[-np.pi/3],[np.pi/8],[np.pi/4]])</span>
+<span class="c1"># print(axis2dcm(rvec))</span>
+<span class="c1"># print(axis2quat(rvec))</span>
+<span class="c1"># print(rotation.as_euler(&#39;XZY&#39;))</span>
+<span class="c1"># print(axis2eul(rvec, &#39;xzy&#39;))</span>
+<span class="c1"># print(rotation.as_euler(&#39;XYZ&#39;))</span>
+<span class="c1"># print(axis2eul(rvec, &#39;xyz&#39;))</span>
+<span class="c1"># print(rotation.as_euler(&#39;YXZ&#39;))</span>
+<span class="c1"># print(axis2eul(rvec, &#39;yxz&#39;))</span>
+<span class="c1"># print(rotation.as_euler(&#39;YZX&#39;))</span>
+<span class="c1"># print(axis2eul(rvec, &#39;yzx&#39;))</span>
+<span class="c1"># print(rotation.as_euler(&#39;ZXY&#39;))</span>
+<span class="c1"># print(axis2eul(rvec, &#39;zxy&#39;))</span>
+<span class="c1"># print(rotation.as_euler(&#39;ZYX&#39;))</span>
+<span class="c1"># print(axis2eul(rvec, &#39;zyx&#39;))</span>
+
 <span class="c1"># from scipy.spatial.transform import Rotation</span>
 <span class="c1"># roll = 0.5</span>
 <span class="c1"># pitch = 1</span>
@@ -507,6 +668,30 @@
 <span class="c1"># cosr = np.cos(roll)</span>
 <span class="c1"># cosp = np.cos(pitch)</span>
 <span class="c1"># cosy = np.cos(yaw)</span>
+
+<span class="c1"># r = Rotation.from_euler(&#39;XZY&#39;, [roll, yaw, pitch])</span>
+<span class="c1"># print(r.as_rotvec())</span>
+<span class="c1"># print(eul2axis(roll, pitch, yaw, seq=&quot;xzy&quot;))</span>
+
+<span class="c1"># r = Rotation.from_euler(&#39;XYZ&#39;, [roll, pitch, yaw])</span>
+<span class="c1"># print(r.as_rotvec())</span>
+<span class="c1"># print(eul2axis(roll, pitch, yaw, seq=&quot;xyz&quot;))</span>
+
+<span class="c1"># r = Rotation.from_euler(&#39;YXZ&#39;, [pitch, roll, yaw])</span>
+<span class="c1"># print(r.as_rotvec())</span>
+<span class="c1"># print(eul2axis(roll, pitch, yaw, seq=&quot;yxz&quot;))</span>
+
+<span class="c1"># r = Rotation.from_euler(&#39;YZX&#39;, [pitch, yaw, roll])</span>
+<span class="c1"># print(r.as_rotvec())</span>
+<span class="c1"># print(eul2axis(roll, pitch, yaw, seq=&quot;yzx&quot;))</span>
+
+<span class="c1"># r = Rotation.from_euler(&#39;ZXY&#39;, [yaw, roll, pitch])</span>
+<span class="c1"># print(r.as_rotvec())</span>
+<span class="c1"># print(eul2axis(roll, pitch, yaw, seq=&quot;zxy&quot;))</span>
+
+<span class="c1"># r = Rotation.from_euler(&#39;ZYX&#39;, [yaw, pitch, roll])</span>
+<span class="c1"># print(r.as_rotvec())</span>
+<span class="c1"># print(eul2axis(roll, pitch, yaw, seq=&quot;zyx&quot;))</span>
 
 <span class="c1"># rot = Rotation.from_euler(&#39;yzx&#39;, [pitch, yaw, roll])</span>
 <span class="c1"># rotation_matrix = rot.as_matrix()</span>
@@ -646,27 +831,27 @@
 <span class="c1"># print(q2,q3,q4,q1)</span>
 <span class="c1"># print(x,y,z,w)</span>
 
-<span class="c1"># euler = Rotation.from_matrix(matrix).as_euler(&quot;yzx&quot;, degrees=False)</span>
+<span class="c1"># euler = Rotation.from_matrix(matrix).as_euler(&quot;XZY&quot;, degrees=False)</span>
 <span class="c1"># print(euler)</span>
 <span class="c1"># print(dcm2eul(matrix, seq=&quot;xzy&quot;))</span>
 
-<span class="c1"># euler = Rotation.from_matrix(matrix).as_euler(&quot;zyx&quot;, degrees=False)</span>
+<span class="c1"># euler = Rotation.from_matrix(matrix).as_euler(&quot;XYZ&quot;, degrees=False)</span>
 <span class="c1"># print(euler)</span>
 <span class="c1"># print(dcm2eul(matrix, seq=&quot;xyz&quot;))</span>
 
-<span class="c1"># euler = Rotation.from_matrix(matrix).as_euler(&quot;zxy&quot;, degrees=False)</span>
+<span class="c1"># euler = Rotation.from_matrix(matrix).as_euler(&quot;YXZ&quot;, degrees=False)</span>
 <span class="c1"># print(euler)</span>
 <span class="c1"># print(dcm2eul(matrix, seq=&quot;yxz&quot;))</span>
 
-<span class="c1"># euler = Rotation.from_matrix(matrix).as_euler(&quot;xzy&quot;, degrees=False)</span>
+<span class="c1"># euler = Rotation.from_matrix(matrix).as_euler(&quot;YZX&quot;, degrees=False)</span>
 <span class="c1"># print(euler)</span>
 <span class="c1"># print(dcm2eul(matrix, seq=&quot;yzx&quot;))</span>
 
-<span class="c1"># euler = Rotation.from_matrix(matrix).as_euler(&quot;yxz&quot;, degrees=False)</span>
+<span class="c1"># euler = Rotation.from_matrix(matrix).as_euler(&quot;ZXY&quot;, degrees=False)</span>
 <span class="c1"># print(euler)</span>
 <span class="c1"># print(dcm2eul(matrix, seq=&quot;zxy&quot;))</span>
 
-<span class="c1"># euler = Rotation.from_matrix(matrix).as_euler(&quot;xyz&quot;, degrees=False)</span>
+<span class="c1"># euler = Rotation.from_matrix(matrix).as_euler(&quot;ZYX&quot;, degrees=False)</span>
 <span class="c1"># print(euler)</span>
 <span class="c1"># print(dcm2eul(matrix, seq=&quot;zyx&quot;))</span>
 
@@ -678,6 +863,13 @@
 <span class="c1"># print(dcm2quat(matrix, seq=&quot;yzx&quot;))</span>
 <span class="c1"># print(dcm2quat(matrix, seq=&quot;zxy&quot;))</span>
 <span class="c1"># print(dcm2quat(matrix, seq=&quot;zyx&quot;))</span>
+
+<span class="c1"># matrix=np.array([[cosy*cosp,cosy*sinp*sinr-siny*cosr,cosy*sinp*cosr+siny*sinr],</span>
+<span class="c1"># [siny*cosp,siny*sinp*sinr+cosy*cosr,siny*sinp*cosr-cosy*sinr],</span>
+<span class="c1"># [-sinp,cosp*sinr,cosp*cosr]])  </span>
+<span class="c1"># axis = Rotation.from_matrix(matrix).as_rotvec()</span>
+<span class="c1"># print(axis)</span>
+<span class="c1"># print(dcm2axis(matrix))</span>
 
 <span class="c1"># q1 = np.quaternion(1,0.2,-0.4,0.7)</span>
 <span class="c1"># q2 = np.quaternion(0.5,0.8,-0.2,-0.3)</span>
@@ -696,37 +888,41 @@
 <span class="c1"># z = -0.3</span>
 <span class="c1"># from scipy.spatial.transform import Rotation</span>
 <span class="c1"># rot = Rotation.from_quat([x,y,z,w])</span>
+<span class="c1"># print(rot.as_rotvec())</span>
+<span class="c1"># print(quat2axis(w, x, y, z))</span>
+
+<span class="c1"># rot = Rotation.from_quat([x,y,z,w])</span>
 <span class="c1"># rotation_matrix = rot.as_matrix()</span>
 <span class="c1"># print(rotation_matrix)</span>
 <span class="c1"># print(quat2dcm(w, x, y, z))</span>
 
 <span class="c1"># rot = Rotation.from_quat([x,y,z,w])</span>
-<span class="c1"># euler = rot.as_euler(&quot;yzx&quot;, degrees=False)</span>
+<span class="c1"># euler = rot.as_euler(&quot;XZY&quot;, degrees=False)</span>
 <span class="c1"># print(euler)</span>
 <span class="c1"># print(quat2eul(w, x, y, z, seq=&quot;xzy&quot;))</span>
 
 <span class="c1"># rot = Rotation.from_quat([x,y,z,w])</span>
-<span class="c1"># euler = rot.as_euler(&quot;zyx&quot;, degrees=False)</span>
+<span class="c1"># euler = rot.as_euler(&quot;XYZ&quot;, degrees=False)</span>
 <span class="c1"># print(euler)</span>
 <span class="c1"># print(quat2eul(w, x, y, z, seq=&quot;xyz&quot;))</span>
 
 <span class="c1"># rot = Rotation.from_quat([x,y,z,w])</span>
-<span class="c1"># euler = rot.as_euler(&quot;zxy&quot;, degrees=False)</span>
+<span class="c1"># euler = rot.as_euler(&quot;YXZ&quot;, degrees=False)</span>
 <span class="c1"># print(euler)</span>
 <span class="c1"># print(quat2eul(w, x, y, z, seq=&quot;yxz&quot;))</span>
 
 <span class="c1"># rot = Rotation.from_quat([x,y,z,w])</span>
-<span class="c1"># euler = rot.as_euler(&quot;xzy&quot;, degrees=False)</span>
+<span class="c1"># euler = rot.as_euler(&quot;YZX&quot;, degrees=False)</span>
 <span class="c1"># print(euler)</span>
 <span class="c1"># print(quat2eul(w, x, y, z, seq=&quot;yzx&quot;))</span>
 
 <span class="c1"># rot = Rotation.from_quat([x,y,z,w])</span>
-<span class="c1"># euler = rot.as_euler(&quot;yxz&quot;, degrees=False)</span>
+<span class="c1"># euler = rot.as_euler(&quot;ZXY&quot;, degrees=False)</span>
 <span class="c1"># print(euler)</span>
 <span class="c1"># print(quat2eul(w, x, y, z, seq=&quot;zxy&quot;))</span>
 
 <span class="c1"># rot = Rotation.from_quat([x,y,z,w])</span>
-<span class="c1"># euler = rot.as_euler(&quot;xyz&quot;, degrees=False)</span>
+<span class="c1"># euler = rot.as_euler(&quot;ZYX&quot;, degrees=False)</span>
 <span class="c1"># print(euler)</span>
 <span class="c1"># print(quat2eul(w, x, y, z, seq=&quot;zyx&quot;))</span>
 </pre></div>

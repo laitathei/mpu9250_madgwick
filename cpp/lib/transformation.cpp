@@ -197,12 +197,3 @@ Vector3d NED2ENU(float N, float E, float D)
     ENU = matrix * NED;
     return ENU;
 }
-
-Matrix3d skew_symmetric(float x, float y, float z)
-{
-    Matrix3d matrix;
-    matrix << 0, -z, y, 
-              z, 0, -x,
-              -y, x, 0.0;
-    return matrix;
-}

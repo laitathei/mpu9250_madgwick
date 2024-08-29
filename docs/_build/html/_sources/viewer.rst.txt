@@ -1,5 +1,5 @@
 viewer module
-====================
+=============
 
 .. automodule:: viewer
    :members:

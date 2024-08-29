@@ -15,5 +15,3 @@ Vector4d accmag2quat(float ax, float ay, float az, float mx, float my, float mz,
 
 Vector3d ENU2NED(float E, float N, float U);
 Vector3d NED2ENU(float N, float E, float D);
-
-Matrix3d skew_symmetric(float x, float y, float z);
