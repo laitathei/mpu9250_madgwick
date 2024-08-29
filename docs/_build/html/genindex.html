@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; mpu9250_ahrs 0.1.0 documentation</title>
+  <title>Index &mdash; mpu9250_ahrs 0.2.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=01f34227"></script>
+        <script src="_static/documentation_options.js?v=37f418d5"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -143,6 +143,12 @@
       </ul></li>
       <li><a href="mpu9250_driver.html#mpu9250_driver.ak8963.AK8963">AK8963 (class in mpu9250_driver.ak8963)</a>
 </li>
+      <li><a href="utils.html#utils.orientation.axis2dcm">axis2dcm() (in module utils.orientation)</a>
+</li>
+      <li><a href="utils.html#utils.orientation.axis2eul">axis2eul() (in module utils.orientation)</a>
+</li>
+      <li><a href="utils.html#utils.orientation.axis2quat">axis2quat() (in module utils.orientation)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -180,6 +186,8 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="utils.html#utils.orientation.dcm2axis">dcm2axis() (in module utils.orientation)</a>
+</li>
       <li><a href="utils.html#utils.orientation.dcm2eul">dcm2eul() (in module utils.orientation)</a>
 </li>
   </ul></td>
@@ -198,18 +206,20 @@
 </li>
       <li><a href="utils.html#utils.transformation.ENU2NED">ENU2NED() (in module utils.transformation)</a>
 </li>
+      <li><a href="utils.html#utils.orientation.eul2axis">eul2axis() (in module utils.orientation)</a>
+</li>
       <li><a href="utils.html#utils.orientation.eul2dcm">eul2dcm() (in module utils.orientation)</a>
 </li>
       <li><a href="utils.html#utils.orientation.eul2quat">eul2quat() (in module utils.orientation)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="utils.html#utils.orientation.left_hand_rule.euler_x_rotation">euler_x_rotation() (utils.orientation.left_hand_rule method)</a>
 
       <ul>
         <li><a href="utils.html#utils.orientation.right_hand_rule.euler_x_rotation">(utils.orientation.right_hand_rule method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="utils.html#utils.orientation.left_hand_rule.euler_y_rotation">euler_y_rotation() (utils.orientation.left_hand_rule method)</a>
 
       <ul>
@@ -464,16 +474,18 @@
 <h2 id="Q">Q</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="utils.html#utils.orientation.quat2axis">quat2axis() (in module utils.orientation)</a>
+</li>
       <li><a href="utils.html#utils.orientation.quat2dcm">quat2dcm() (in module utils.orientation)</a>
 </li>
       <li><a href="utils.html#utils.orientation.quat2eul">quat2eul() (in module utils.orientation)</a>
 </li>
       <li><a href="utils.html#utils.orientation.quat_conjugate">quat_conjugate() (in module utils.orientation)</a>
 </li>
-      <li><a href="ahrs.html#ahrs.ekf.EKF.quat_differential">quat_differential() (ahrs.ekf.EKF method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ahrs.html#ahrs.ekf.EKF.quat_differential">quat_differential() (ahrs.ekf.EKF method)</a>
+</li>
       <li><a href="utils.html#utils.orientation.quat_multi">quat_multi() (in module utils.orientation)</a>
 </li>
       <li><a href="utils.html#utils.orientation.quat_x_rotation">quat_x_rotation() (in module utils.orientation)</a>
@@ -526,7 +538,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mpu9250_driver.html#mpu9250_driver.ak8963.AK8963.set_mode">set_mode() (mpu9250_driver.ak8963.AK8963 method)</a>
 </li>
-      <li><a href="utils.html#utils.transformation.skew_symmetric">skew_symmetric() (in module utils.transformation)</a>
+      <li><a href="utils.html#utils.orientation.skew_symmetric">skew_symmetric() (in module utils.orientation)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
