@@ -146,6 +146,78 @@ def quat_z_rotation(yaw):
     Q = np.quaternion(w, x, y, z)
     return Q
 
+def skew_symmetric(x, y, z):
+    """
+    Create skew symmetric matrix by vector
+
+    :param float x: 1st element of vector
+    :param float y: 2nd element of vector
+    :param float z: 3rd element of vector
+    :returns: 
+        - matrix (ndarray) - skew-symmetric matrix
+    """
+    matrix = np.array([[0, -z, y],
+                       [z, 0, -x],
+                       [-y, x, 0.0]])
+    return matrix
+
+def axis2dcm(axis):
+    """
+    Convert Axis angle to Direction Cosine Matrix [1]_
+
+    :param np.array axis: axis vector
+    :returns: 
+        - DCM (numpy.matrix) - rotation matrix
+
+    .. Reference
+    .. [1] 'Wiki <https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle>'
+    """
+    angle = np.linalg.norm(axis)
+    axis = axis / angle
+    x = axis[0][0]
+    y = axis[1][0]
+    z = axis[2][0]
+    n_hat = skew_symmetric(x, y, z)
+    DCM = np.cos(angle) * np.eye(3) + (1 - np.cos(angle)) * np.outer(axis, axis) + np.sin(angle) * n_hat
+    return DCM
+
+def axis2quat(axis):
+    """
+    Convert Axis angle to Quaternion [1]_
+
+    :param np.array axis: axis vector
+    :returns: 
+        - w (float) - Quaternion magnitude
+        - x (float) - Quaternion X axis
+        - y (float) - Quaternion Y axis
+        - z (float) - Quaternion Z axis
+
+    .. Reference
+    .. [1] 'Wiki <https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation>'
+    """
+    angle = np.linalg.norm(axis)
+    axis = axis / angle
+    w = np.cos(angle/2)
+    x = axis[0][0] * np.sin(angle/2)
+    y = axis[1][0] * np.sin(angle/2)
+    z = axis[2][0] * np.sin(angle/2)
+    return w, x, y, z
+
+def axis2eul(axis, seq="xyz"):
+    """
+    Convert Axis angle to Euler angle
+
+    :param np.array axis: axis vector
+    :param str seq: rotation sequence
+    :returns: 
+        - roll (float) - x-axis Euler angle in radians
+        - pitch (float) - y-axis Euler angle in radians
+        - yaw (float) - z-axis Euler angle in radians
+    """
+    w, x, y, z = axis2quat(axis)
+    roll, pitch, yaw = quat2eul(w, x, y, z, seq)
+    return roll, pitch, yaw
+
 def eul2dcm(roll, pitch, yaw, seq="xyz", coordinates="right"):
     """
     Convert Euler angle to Direction Cosine Matrix [1]_
@@ -199,6 +271,25 @@ def eul2quat(roll, pitch, yaw, seq="xyz"):
     Q = Q_dict[seq[0]] * Q_dict[seq[1]] * Q_dict[seq[2]]
     w, x, y, z = Q.w, Q.x, Q.y, Q.z
     return w, x, y, z
+
+def eul2axis(roll, pitch, yaw, seq="xyz", coordinates="right"):
+    """
+    Convert Euler angle to Axis angle [1]_
+
+    :param float roll: x-axis Euler angle in radians
+    :param float pitch: y-axis Euler angle in radians
+    :param float yaw: z-axis Euler angle in radians
+    :param str seq: rotation sequence
+    :param str coordinates: right-handed or left-handed coordinates system
+    :returns: 
+        - axis (np.array) - Axis angle
+
+    .. Reference
+    .. [1] 'Wiki <https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation#Log_map_from_SO(3)_to_%F0%9D%94%B0%F0%9D%94%AC(3)>'
+    """
+    dcm = eul2dcm(roll, pitch, yaw, seq, coordinates)
+    axis = dcm2axis(dcm)
+    return axis
 
 def dcm2eul(dcm: np.matrix, seq="xyz"):
     """
@@ -262,6 +353,14 @@ def dcm2quat(dcm: np.matrix, seq="xyz"):
     w, x, y, z = eul2quat(roll, pitch, yaw, seq)
     return w, x, y, z
 
+def dcm2axis(dcm: np.matrix):
+    angle = np.arccos((np.trace(dcm) - 1) / 2)
+    x = (dcm[2, 1] - dcm[1, 2]) / (2 * np.sin(angle))
+    y = (dcm[0, 2] - dcm[2, 0]) / (2 * np.sin(angle))
+    z = (dcm[1, 0] - dcm[0, 1]) / (2 * np.sin(angle))
+    axis = np.array([[x],[y],[z]]) * angle
+    return axis
+
 def quat2dcm(w, x, y, z):
     """
     Convert Quaternion to Direction Cosine Matrix [1]_
@@ -308,6 +407,25 @@ def quat2eul(w, x, y, z, seq="xyz"):
     # convert DCM to Euler angle
     roll, pitch, yaw = dcm2eul(DCM, seq)
     return roll, pitch, yaw
+
+def quat2axis(w, x, y, z):
+    """
+    Convert Quaternion to Euler angle
+
+    :param float w: Quaternion magnitude
+    :param float x: Quaternion X axis
+    :param float y: Quaternion Y axis
+    :param float z: Quaternion Z axis
+    :returns: 
+        - axis (np.array) - Axis angle
+
+    .. Reference
+    .. [1] 'Wiki <https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Recovering_the_axis-angle_representation>'
+    """
+    norm = np.linalg.norm(np.array([[x],[y],[z]]))
+    angle = 2 * np.arctan2(norm, w)
+    axis = np.array([[x],[y],[z]]) * angle / norm
+    return axis
 
 def quat_multi(q1, q2):
     """
@@ -367,6 +485,28 @@ def quat_conjugate(q):
     q = np.array([[w],[x],[y],[z]])
     return q
 
+# import numpy as np
+# from scipy.spatial.transform import Rotation as R
+# rvec = np.array([-np.pi/3,np.pi/8,np.pi/4])
+# rotation = R.from_rotvec(rvec)
+# print(rotation.as_matrix())
+# print(rotation.as_quat())
+# rvec = np.array([[-np.pi/3],[np.pi/8],[np.pi/4]])
+# print(axis2dcm(rvec))
+# print(axis2quat(rvec))
+# print(rotation.as_euler('XZY'))
+# print(axis2eul(rvec, 'xzy'))
+# print(rotation.as_euler('XYZ'))
+# print(axis2eul(rvec, 'xyz'))
+# print(rotation.as_euler('YXZ'))
+# print(axis2eul(rvec, 'yxz'))
+# print(rotation.as_euler('YZX'))
+# print(axis2eul(rvec, 'yzx'))
+# print(rotation.as_euler('ZXY'))
+# print(axis2eul(rvec, 'zxy'))
+# print(rotation.as_euler('ZYX'))
+# print(axis2eul(rvec, 'zyx'))
+
 # from scipy.spatial.transform import Rotation
 # roll = 0.5
 # pitch = 1
@@ -377,6 +517,30 @@ def quat_conjugate(q):
 # cosr = np.cos(roll)
 # cosp = np.cos(pitch)
 # cosy = np.cos(yaw)
+
+# r = Rotation.from_euler('XZY', [roll, yaw, pitch])
+# print(r.as_rotvec())
+# print(eul2axis(roll, pitch, yaw, seq="xzy"))
+
+# r = Rotation.from_euler('XYZ', [roll, pitch, yaw])
+# print(r.as_rotvec())
+# print(eul2axis(roll, pitch, yaw, seq="xyz"))
+
+# r = Rotation.from_euler('YXZ', [pitch, roll, yaw])
+# print(r.as_rotvec())
+# print(eul2axis(roll, pitch, yaw, seq="yxz"))
+
+# r = Rotation.from_euler('YZX', [pitch, yaw, roll])
+# print(r.as_rotvec())
+# print(eul2axis(roll, pitch, yaw, seq="yzx"))
+
+# r = Rotation.from_euler('ZXY', [yaw, roll, pitch])
+# print(r.as_rotvec())
+# print(eul2axis(roll, pitch, yaw, seq="zxy"))
+
+# r = Rotation.from_euler('ZYX', [yaw, pitch, roll])
+# print(r.as_rotvec())
+# print(eul2axis(roll, pitch, yaw, seq="zyx"))
 
 # rot = Rotation.from_euler('yzx', [pitch, yaw, roll])
 # rotation_matrix = rot.as_matrix()
@@ -516,27 +680,27 @@ def quat_conjugate(q):
 # print(q2,q3,q4,q1)
 # print(x,y,z,w)
 
-# euler = Rotation.from_matrix(matrix).as_euler("yzx", degrees=False)
+# euler = Rotation.from_matrix(matrix).as_euler("XZY", degrees=False)
 # print(euler)
 # print(dcm2eul(matrix, seq="xzy"))
 
-# euler = Rotation.from_matrix(matrix).as_euler("zyx", degrees=False)
+# euler = Rotation.from_matrix(matrix).as_euler("XYZ", degrees=False)
 # print(euler)
 # print(dcm2eul(matrix, seq="xyz"))
 
-# euler = Rotation.from_matrix(matrix).as_euler("zxy", degrees=False)
+# euler = Rotation.from_matrix(matrix).as_euler("YXZ", degrees=False)
 # print(euler)
 # print(dcm2eul(matrix, seq="yxz"))
 
-# euler = Rotation.from_matrix(matrix).as_euler("xzy", degrees=False)
+# euler = Rotation.from_matrix(matrix).as_euler("YZX", degrees=False)
 # print(euler)
 # print(dcm2eul(matrix, seq="yzx"))
 
-# euler = Rotation.from_matrix(matrix).as_euler("yxz", degrees=False)
+# euler = Rotation.from_matrix(matrix).as_euler("ZXY", degrees=False)
 # print(euler)
 # print(dcm2eul(matrix, seq="zxy"))
 
-# euler = Rotation.from_matrix(matrix).as_euler("xyz", degrees=False)
+# euler = Rotation.from_matrix(matrix).as_euler("ZYX", degrees=False)
 # print(euler)
 # print(dcm2eul(matrix, seq="zyx"))
 
@@ -548,6 +712,13 @@ def quat_conjugate(q):
 # print(dcm2quat(matrix, seq="yzx"))
 # print(dcm2quat(matrix, seq="zxy"))
 # print(dcm2quat(matrix, seq="zyx"))
+
+# matrix=np.array([[cosy*cosp,cosy*sinp*sinr-siny*cosr,cosy*sinp*cosr+siny*sinr],
+# [siny*cosp,siny*sinp*sinr+cosy*cosr,siny*sinp*cosr-cosy*sinr],
+# [-sinp,cosp*sinr,cosp*cosr]])  
+# axis = Rotation.from_matrix(matrix).as_rotvec()
+# print(axis)
+# print(dcm2axis(matrix))
 
 # q1 = np.quaternion(1,0.2,-0.4,0.7)
 # q2 = np.quaternion(0.5,0.8,-0.2,-0.3)
@@ -566,36 +737,40 @@ def quat_conjugate(q):
 # z = -0.3
 # from scipy.spatial.transform import Rotation
 # rot = Rotation.from_quat([x,y,z,w])
+# print(rot.as_rotvec())
+# print(quat2axis(w, x, y, z))
+
+# rot = Rotation.from_quat([x,y,z,w])
 # rotation_matrix = rot.as_matrix()
 # print(rotation_matrix)
 # print(quat2dcm(w, x, y, z))
 
 # rot = Rotation.from_quat([x,y,z,w])
-# euler = rot.as_euler("yzx", degrees=False)
+# euler = rot.as_euler("XZY", degrees=False)
 # print(euler)
 # print(quat2eul(w, x, y, z, seq="xzy"))
 
 # rot = Rotation.from_quat([x,y,z,w])
-# euler = rot.as_euler("zyx", degrees=False)
+# euler = rot.as_euler("XYZ", degrees=False)
 # print(euler)
 # print(quat2eul(w, x, y, z, seq="xyz"))
 
 # rot = Rotation.from_quat([x,y,z,w])
-# euler = rot.as_euler("zxy", degrees=False)
+# euler = rot.as_euler("YXZ", degrees=False)
 # print(euler)
 # print(quat2eul(w, x, y, z, seq="yxz"))
 
 # rot = Rotation.from_quat([x,y,z,w])
-# euler = rot.as_euler("xzy", degrees=False)
+# euler = rot.as_euler("YZX", degrees=False)
 # print(euler)
 # print(quat2eul(w, x, y, z, seq="yzx"))
 
 # rot = Rotation.from_quat([x,y,z,w])
-# euler = rot.as_euler("yxz", degrees=False)
+# euler = rot.as_euler("ZXY", degrees=False)
 # print(euler)
 # print(quat2eul(w, x, y, z, seq="zxy"))
 
 # rot = Rotation.from_quat([x,y,z,w])
-# euler = rot.as_euler("xyz", degrees=False)
+# euler = rot.as_euler("ZYX", degrees=False)
 # print(euler)
 # print(quat2eul(w, x, y, z, seq="zyx"))

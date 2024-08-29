@@ -2,8 +2,7 @@
 import numpy as np
 import scipy as sp
 import math
-from utils.orientation import quat2dcm, quat2eul
-from utils.transformation import skew_symmetric
+from utils.orientation import quat2dcm, quat2eul, skew_symmetric
 
 class EKF():
     """

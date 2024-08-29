@@ -34,14 +34,23 @@ Vector4d quat_x_rotation(float roll);
 Vector4d quat_y_rotation(float pitch);
 Vector4d quat_z_rotation(float yaw);
 
+Matrix3d skew_symmetric(float x, float y, float z);
+
+Matrix3d axis2dcm(Vector3d axis);
+Vector4d axis2quat(Vector3d axis);
+Vector3d axis2eul(Vector3d axis, string seq);
+
 Matrix3d eul2dcm(float roll, float pitch, float yaw, string seq, string coordinates);
 Vector4d eul2quat(float roll, float pitch, float yaw, string seq);
+Vector3d eul2axis(float roll, float pitch, float yaw, string seq, string coordinates);
 
 Vector3d dcm2eul(Matrix3d dcm, string seq);
 Vector4d dcm2quat(Matrix3d dcm, string seq);
+Vector3d dcm2axis(Matrix3d dcm);
 
 Matrix3d quat2dcm(float w, float x, float y, float z);
 Vector3d quat2eul(float w, float x, float y, float z, string seq);
+Vector3d quat2axis(float w, float x, float y, float z);
 
 Vector4d quat_multi(Vector4d q1, Vector4d q2);
 Vector4d quat_conjugate(Vector4d q);

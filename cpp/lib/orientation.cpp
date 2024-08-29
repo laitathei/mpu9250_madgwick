@@ -87,6 +87,48 @@ Vector4d quat_z_rotation(float yaw)
     return quaternion;
 }
 
+Matrix3d skew_symmetric(float x, float y, float z)
+{
+    Matrix3d matrix;
+    matrix << 0, -z, y, 
+              z, 0, -x,
+              -y, x, 0.0;
+    return matrix;
+}
+
+Matrix3d axis2dcm(Vector3d axis)
+{
+    float angle = axis.norm();
+    Vector3d normalized = axis / angle;
+    float x = normalized(0);
+    float y = normalized(1);
+    float z = normalized(2);
+    Matrix3d n_hat = skew_symmetric(x, y, z);
+    Matrix3d DCM = cos(angle) * Matrix3d::Identity() + (1 - std::cos(angle)) * normalized * normalized.transpose() + sin(angle) * n_hat;
+    return DCM;
+}
+
+Vector4d axis2quat(Vector3d axis)
+{
+    float angle = axis.norm();
+    Vector3d normalized = axis / angle;
+    float w = cos(angle/2);
+    float x = normalized(0) * sin(angle/2);
+    float y = normalized(1) * sin(angle/2);
+    float z = normalized(2) * sin(angle/2);
+    Vector4d quat(w, x, y, z);
+    return quat;
+}
+
+Vector3d axis2eul(Vector3d axis, string seq)
+{
+    float w, x, y, z;
+    Vector4d quat = axis2quat(axis);
+    w = quat(0), x = quat(1), y = quat(2), z = quat(3);
+    Vector3d eul = quat2eul(w, x, y, z, seq);
+    return eul;
+}
+
 Matrix3d eul2dcm(float roll, float pitch, float yaw, string seq="xyz", string coordinates="right")
 {
     static right_hand_rule right;
@@ -128,6 +170,13 @@ Vector4d eul2quat(float roll, float pitch, float yaw, string seq)
     Q_dict['z'] = Qz;
     Vector4d quat = quat_multi(quat_multi(Q_dict[seq[0]], Q_dict[seq[1]]), Q_dict[seq[2]]);
     return quat;
+}
+
+Vector3d eul2axis(float roll, float pitch, float yaw, string seq, string coordinates)
+{
+    Matrix3d dcm = eul2dcm(roll, pitch, yaw, seq, coordinates);
+    Vector3d axis = dcm2axis(dcm);
+    return axis;
 }
 
 Vector3d dcm2eul(Matrix3d dcm, string seq)
@@ -192,6 +241,16 @@ Vector4d dcm2quat(Matrix3d dcm, string seq)
     return quat;
 }
 
+Vector3d dcm2axis(Matrix3d dcm)
+{
+    float angle = acos((dcm.trace() - 1) / 2.0);
+    float x = (dcm(2, 1) - dcm(1, 2)) / (2.0 * sin(angle));
+    float y = (dcm(0, 2) - dcm(2, 0)) / (2.0 * sin(angle));
+    float z = (dcm(1, 0) - dcm(0, 1)) / (2.0 * sin(angle));
+    Vector3d axis = Vector3d(x, y, z) * angle;
+    return axis;
+}
+
 Matrix3d quat2dcm(float w, float x, float y, float z)
 {
     float n, s;
@@ -229,6 +288,15 @@ Vector3d quat2eul(float w, float x, float y, float z, string seq)
     // convert DCM to Euler angle
     eul = dcm2eul(dcm, seq);
     return eul;
+}
+
+Vector3d quat2axis(float w, float x, float y, float z)
+{
+    Vector3d axis(x, y, z);
+    float norm = axis.norm();
+    float angle = 2 * atan2(norm, w);
+    axis = axis * angle / norm;
+    return axis;
 }
 
 Vector4d quat_multi(Vector4d q1, Vector4d q2)
