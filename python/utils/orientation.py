@@ -354,6 +354,16 @@ def dcm2quat(dcm: np.matrix, seq="xyz"):
     return w, x, y, z
 
 def dcm2axis(dcm: np.matrix):
+    """
+    Convert Direction Cosine Matrix with specific order to Axis angle [1]_
+
+    :param np.matrix dcm: rotation matrix
+    :returns: 
+        - axis (np.array) - Axis angle
+
+    .. Reference
+    .. [1] 'Wiki <https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation#Log_map_from_SO(3)_to_%F0%9D%94%B0%F0%9D%94%AC(3)>'
+    """
     angle = np.arccos((np.trace(dcm) - 1) / 2)
     x = (dcm[2, 1] - dcm[1, 2]) / (2 * np.sin(angle))
     y = (dcm[0, 2] - dcm[2, 0]) / (2 * np.sin(angle))
