@@ -193,7 +193,7 @@ def axis2quat(axis):
         - z (float) - Quaternion Z axis
 
     .. Reference
-    .. [1] 'Wiki <https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation>'
+    .. [1] 'Wiki <https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation#Unit_quaternions>'
     """
     angle = np.linalg.norm(axis)
     axis = axis / angle
